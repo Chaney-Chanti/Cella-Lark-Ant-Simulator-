@@ -22,8 +22,6 @@ var g_box = { t:1, hgt:47, l:1, wid:63 }; // Box in which bot can move.
 function move_bot( )
 {
     console.log("Move");
-    //let color = get(g_bot.x, g_bot.y);
-    //console.log(color);
     let sz = g_canvas.cell_size;
     let sz2 = sz / 2;
     let x = 1+ g_bot.x*sz; // Set x one pixel inside the sz-by-sz cell.
@@ -33,7 +31,7 @@ function move_bot( )
     let dy = 0;
 
     // Changes nose direction
-    if (g_bot.mode = "LRMode"){
+    if (g_bot.mode == "LRMode"){
 
       if (acolors == "0,0,0,0"){ //black turn left
         if(g_bot.nose == 0){ g_bot.nose = 3; }
@@ -51,69 +49,67 @@ function move_bot( )
         if(g_bot.nose == 3){ g_bot.nose = 0; }
         else{ g_bot.nose++; }
       }
-      console.log("Nose: " + g_bot.nose);
+       // Depending on nose direction, this will move the ant
+      if(g_bot.nose == 0){
+        dx = 1;
+      }
+      else if(g_bot.nose == 1){
+        dy = 1;
+      }
+      else if(g_bot.nose == 2){
+        dx = -1;
+      }
+      else if(g_bot.nose == 3){
+        dy = -1;       
+      }
     }
 
-    while (g_bot.mode == "SetCountMode"){
-
-      while(g_bot.counter > 0){
+    if(g_bot.mode == "SetCountMode"){
+      if(g_bot.counter > 0){
         if(g_bot.nose == 0){
           dx=1;
-          console.log("going up " + g_bot.counter);
         }
         else if(g_bot.nose == 1){
-          dy=1;
-          console.log("going right " + g_bot.counter);
+          dy=1; 
         }
         else if(g_bot.nose == 2){
-          dx=-1;
-          console.log("going down "+ g_bot.counter);
+          dx=-1;         
         }
         else if(g_bot.nose == 3){
           dy=-1;
-          console.log("going left " + g_bot.counter);
         }
-
         g_bot.counter--;
-      } 
-
-      if(g_bot.counter == 0) { //Resets counter and changes mode back to LRMode
-        g_bot.counter = 5;
-        g_bot.mode = "LRMode";
-      }
-
+    } 
+    if(g_bot.counter == 0) { //Resets counter and changes mode back to LRMode
+      g_bot.counter = (round ( 5 * random()));
+      g_bot.mode = "LRMode";
     }
+}
+  
     
     
     // Depending on nose direction, this will move the ant
     if(g_bot.nose == 0){
       dx = 1;
-      console.log("Going Up");
     }
     else if(g_bot.nose == 1){
-      dy = 1;
-      console.log("Going Right");
+      dy = 1;  
     }
     else if(g_bot.nose == 2){
       dx = -1;
-      console.log("Going Down");
     }
     else if(g_bot.nose == 3){
       dy = -1;
-      console.log("Going Left");
-      
     }
 
     x = (dx + g_bot.x + g_box.wid) % g_box.wid; // Move-x.  Ensure positive b4 mod.
     y = (dy + g_bot.y + g_box.hgt) % g_box.hgt; // Ditto y.
     console.log("X: " + x);
     console.log("Y: " + y);
-    //let color =  100 + (1 + g_bot.color) % 156; // Incr color in nice range.
     g_bot.x = x; // Update bot x.
     g_bot.y = y;
     console.log("X: " + g_bot.x);
     console.log("Y: " + g_bot.y);
-    //console.log( "bot x,y,dir,clr = " + x + "," + y + "," + dir + "," +  color );
 }
 
 function draw_bot( ) // Convert bot pox to grid pos & draw bot.
@@ -125,14 +121,7 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
     let y = 1+ g_bot.y*sz;
     let big = sz -2; // Stay inside cell walls.
 
-    //console.log( "x,y,big = " + x + "," + y + "," + big );
     let acolors = get( x + sz2, y + sz2 ); // Get cell interior pixel color [RGBA] array.
-     console.log("Acolors: " + acolors);
-     console.log("A: " + acolors[0]);
-     console.log("B: " + acolors[1]);
-     console.log("C: " + acolors[2]);
-    //console.log( "acolors,pix = " + acolors + ", " + pix );
-
     if (acolors == "0,0,0,0"){ // if black fill blue
       fill( 0,0,255 ); 
       }
@@ -155,8 +144,6 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 
 function draw_update()  // Update our display.
 {
-    //console.log( "g_frame_cnt = " + g_frame_cnt );
-    //console.log("Update");
     move_bot( );
     draw_bot( );
 }
@@ -180,18 +167,12 @@ function mousePressed( )
 {
     let x = mouseX;
     let y = mouseY;
-    //console.log( "mouse x,y = " + x + "," + y );
     let sz = g_canvas.cell_size;
     let gridx = round( (x-0.5) / sz );
     let gridy = round( (y-0.5) / sz );
-    //console.log( "grid x,y = " + gridx + "," + gridy );
-    //console.log( "box wid,hgt = " + g_box.wid + "," + g_box.hgt );
     g_bot.x = gridx + g_box.wid; // Ensure its positive.
-    //console.log( "bot x = " + g_bot.x );
     g_bot.x %= g_box.wid; // Wrap to fit box.
     g_bot.y = gridy + g_box.hgt;
-    //console.log( "bot y = " + g_bot.y );
     g_bot.y %= g_box.hgt;
-    //console.log( "bot x,y = " + g_bot.x + "," + g_bot.y );
     draw_bot( );
 }
