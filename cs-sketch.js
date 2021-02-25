@@ -16,7 +16,7 @@ function setup() // P5 Setup Fcn
     draw_grid( 10, 50, 'white', 'yellow' );
 }
 
-var g_bot = { nose:0, x:20, y:20, color:"FFFFFF", mode:"LRMode", counter:3}; // Dir is 0..7 clock, w 0 up.
+var g_bot = { nose:0, x:20, y:20, color:"FFFFFF", mode:"LRMode", counter:5}; // Dir is 0..7 clock, w 0 up.
 var g_box = { t:1, hgt:47, l:1, wid:63 }; // Box in which bot can move.
 
 function move_bot( )
@@ -37,11 +37,11 @@ function move_bot( )
 
       if (acolors == "0,0,0,0"){ //black turn left
         if(g_bot.nose == 0){ g_bot.nose = 3; }
-        else{ --g_bot.nose; }
+        else{ g_bot.nose--; }
         }
       else if (acolors == "0,0,255,255"){ //blue turn left
         if(g_bot.nose == 0){ g_bot.nose = 3; }
-        else{ --g_bot.nose; }
+        else{ g_bot.nose--; }
       }
       else if (acolors == "255,255,0,255"){ //yellow go straight (Goes into Set-count)
         // This is my implementation of Countdown mode but it's probably wrong. Need to clean up because redundant code.
@@ -49,7 +49,7 @@ function move_bot( )
       }
       else if (acolors == "255,0,0,255"){ //red turn right
         if(g_bot.nose == 3){ g_bot.nose = 0; }
-        else{ ++g_bot.nose; }
+        else{ g_bot.nose++; }
       }
       console.log("Nose: " + g_bot.nose);
     }
@@ -78,7 +78,7 @@ function move_bot( )
       } 
 
       if(g_bot.counter == 0) { //Resets counter and changes mode back to LRMode
-        g_bot.counter = (round(4 * random())); 
+        g_bot.counter = 5;
         g_bot.mode = "LRMode";
       }
 
@@ -101,6 +101,7 @@ function move_bot( )
     else if(g_bot.nose == 3){
       dy = -1;
       console.log("Going Left");
+      
     }
 
     x = (dx + g_bot.x + g_box.wid) % g_box.wid; // Move-x.  Ensure positive b4 mod.
@@ -126,11 +127,11 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 
     //console.log( "x,y,big = " + x + "," + y + "," + big );
     let acolors = get( x + sz2, y + sz2 ); // Get cell interior pixel color [RGBA] array.
-    //  console.log("Acolors: " + acolors);
-    //  console.log("A: " + acolors[0]);
-    //  console.log("B: " + acolors[1]);
-    //  console.log("C: " + acolors[2]);
-    // //console.log( "acolors,pix = " + acolors + ", " + pix );
+     console.log("Acolors: " + acolors);
+     console.log("A: " + acolors[0]);
+     console.log("B: " + acolors[1]);
+     console.log("C: " + acolors[2]);
+    //console.log( "acolors,pix = " + acolors + ", " + pix );
 
     if (acolors == "0,0,0,0"){ // if black fill blue
       fill( 0,0,255 ); 
