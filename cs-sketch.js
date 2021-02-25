@@ -2,18 +2,10 @@
 // Time-stamp: <2020-02-02 15:58:23 Chuck Siska>
 
 // Make global g_canvas JS 'object': a key-value 'dictionary'.
-var g_canvas = { cell_size:10, wid:60, hgt:40 }; //The Larks #34 ant will start in an all black 60 by 40 grid
+var g_canvas = { cell_size:10, wid:60, hgt:40 }; // JS Global var, w canvas size info.
 var g_frame_cnt = 0; // Setup a P5 display-frame counter, to do anim
-var g_frame_mod = 10; // Update ever 'mod' frames.
+var g_frame_mod = 24; // Update ever 'mod' frames.
 var g_stop = 0; // Go by default.
-
-var dx = 0;
-var dy = 0;
-
-var mode = 1;          // 1: LR mode, 2: Set-Count Mode, 3: CountDown Mode
-var color = 3;         // 3: black(left), 2: red(right) , 1: yellow(straight), 0: blue(left)
-var dir = 0;           // 0: straight, 1: right, 2: left
-
 
 function setup() // P5 Setup Fcn
 {
@@ -24,83 +16,137 @@ function setup() // P5 Setup Fcn
     draw_grid( 10, 50, 'white', 'yellow' );
 }
 
-var g_bot = { dir:0, x:20, y:20, color:100 }; // Dir is 0..7 clock, w 0 up.
+var g_bot = { nose:0, x:20, y:20, color:"FFFFFF", mode:"LRMode", counter:3}; // Dir is 0..7 clock, w 0 up.
 var g_box = { t:1, hgt:47, l:1, wid:63 }; // Box in which bot can move.
-
 
 function move_bot( )
 {
-    switch (color) { // Convert dir to x,y deltas: dir = clock w 0=Up,2=Rt,4=Dn,6=Left.
-        //blue (left)
-        case 0 : { 
-            if(dir == 0){
-                g_bot.dir + 2; 
-            }
-            else if(dir == 1){
-                g_bot.dir = 1;
-            }
+    console.log("Move");
+    //let color = get(g_bot.x, g_bot.y);
+    //console.log(color);
+    let sz = g_canvas.cell_size;
+    let sz2 = sz / 2;
+    let x = 1+ g_bot.x*sz; // Set x one pixel inside the sz-by-sz cell.
+    let y = 1+ g_bot.y*sz;
+    let acolors = get( x + sz2, y + sz2 );
+    let dx = 0;
+    let dy = 0;
+
+    // Changes nose direction
+    if (g_bot.mode = "LRMode"){
+
+      if (acolors == "0,0,0,0"){ //black turn left
+        if(g_bot.nose == 0){ g_bot.nose = 3; }
+        else{ --g_bot.nose; }
         }
-        //yellow (straight)
-        case 1 : { 
-            if(dir == 1){
-                g_bot.dir - 1;
-            }
-            else if(dir == 2){
-                g_bot.dir - 2;
-            }
-            mode = 2; //switch to set count mode
-        }
-        //red (right)
-        case 2 : { 
-            if(dir == 0){
-                g_bot.dir + 1;
-            }
-            else if(dir == 2){
-                g_bot.dir - 1;
-            }
-        }
-        //black (left)
-        case 3: {
-            if(dir == 0){
-                g_bot.dir + 2; 
-            }
-            else if(dir == 1){
-                g_bot.dir = 1;
-            }
-        }
+      else if (acolors == "0,0,255,255"){ //blue turn left
+        if(g_bot.nose == 0){ g_bot.nose = 3; }
+        else{ --g_bot.nose; }
+      }
+      else if (acolors == "255,255,0,255"){ //yellow go straight (Goes into Set-count)
+        // This is my implementation of Countdown mode but it's probably wrong. Need to clean up because redundant code.
+        g_bot.mode = "SetCountMode";
+      }
+      else if (acolors == "255,0,0,255"){ //red turn right
+        if(g_bot.nose == 3){ g_bot.nose = 0; }
+        else{ ++g_bot.nose; }
+      }
+      console.log("Nose: " + g_bot.nose);
     }
-    let x = (dx + g_bot.x + g_box.wid) % g_box.wid; // Move-x.  Ensure positive b4 mod.
-    let y = (dy + g_bot.y + g_box.hgt) % g_box.hgt; // Ditto y.
 
-    // Change color of square 
+    while (g_bot.mode == "SetCountMode"){
 
-    let color =  100 + (1 + g_bot.color) % 156; // Incr color in nice range.
+      while(g_bot.counter > 0){
+        if(g_bot.nose == 0){
+          dx=1;
+          console.log("going up " + g_bot.counter);
+        }
+        else if(g_bot.nose == 1){
+          dy=1;
+          console.log("going right " + g_bot.counter);
+        }
+        else if(g_bot.nose == 2){
+          dx=-1;
+          console.log("going down "+ g_bot.counter);
+        }
+        else if(g_bot.nose == 3){
+          dy=-1;
+          console.log("going left " + g_bot.counter);
+        }
+
+        g_bot.counter--;
+      } 
+
+      if(g_bot.counter == 0) { //Resets counter and changes mode back to LRMode
+        g_bot.counter = (round(4 * random())); 
+        g_bot.mode = "LRMode";
+      }
+
+    }
+    
+    
+    // Depending on nose direction, this will move the ant
+    if(g_bot.nose == 0){
+      dx = 1;
+      console.log("Going Up");
+    }
+    else if(g_bot.nose == 1){
+      dy = 1;
+      console.log("Going Right");
+    }
+    else if(g_bot.nose == 2){
+      dx = -1;
+      console.log("Going Down");
+    }
+    else if(g_bot.nose == 3){
+      dy = -1;
+      console.log("Going Left");
+    }
+
+    x = (dx + g_bot.x + g_box.wid) % g_box.wid; // Move-x.  Ensure positive b4 mod.
+    y = (dy + g_bot.y + g_box.hgt) % g_box.hgt; // Ditto y.
+    console.log("X: " + x);
+    console.log("Y: " + y);
+    //let color =  100 + (1 + g_bot.color) % 156; // Incr color in nice range.
     g_bot.x = x; // Update bot x.
     g_bot.y = y;
-    g_bot.dir = dir;
-    g_bot.color = color;
+    console.log("X: " + g_bot.x);
+    console.log("Y: " + g_bot.y);
     //console.log( "bot x,y,dir,clr = " + x + "," + y + "," + dir + "," +  color );
 }
 
-
-
 function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 {
+    console.log("Draw bot");
     let sz = g_canvas.cell_size;
     let sz2 = sz / 2;
     let x = 1+ g_bot.x*sz; // Set x one pixel inside the sz-by-sz cell.
     let y = 1+ g_bot.y*sz;
     let big = sz -2; // Stay inside cell walls.
-    // Fill 'color': its a keystring, or a hexstring like "#5F", etc.  See P5 docs.
-    fill( "#" + g_bot.color ); // Concat string, auto-convert the number to string.
+
     //console.log( "x,y,big = " + x + "," + y + "," + big );
     let acolors = get( x + sz2, y + sz2 ); // Get cell interior pixel color [RGBA] array.
-    let pix = acolors[ 0 ] + acolors[ 1 ] + acolors[ 2 ];
-    //console.log( "acolors,pix = " + acolors + ", " + pix );
+    //  console.log("Acolors: " + acolors);
+    //  console.log("A: " + acolors[0]);
+    //  console.log("B: " + acolors[1]);
+    //  console.log("C: " + acolors[2]);
+    // //console.log( "acolors,pix = " + acolors + ", " + pix );
 
-    // (*) Here is how to detect what's at the pixel location.  See P5 docs for fancier...
-    if (0 != pix) { fill( 0 ); stroke( 0 ); } // Turn off color of prior bot-visited cell.
-    else { stroke( 'white' ); } // Else Bot visiting this cell, so color it.
+    if (acolors == "0,0,0,0"){ // if black fill blue
+      fill( 0,0,255 ); 
+      }
+    else if (acolors == "0,0,255,255"){ //if blue fill yellow
+      fill(255,255,0);
+    }
+    else if (acolors == "255,255,0,255"){ //if yellow fill red
+      fill(255,0,0);
+    }
+    else if (acolors == "255,0,0,255"){ //if red fill black
+      fill(0,0,0);
+    }
+    else{ //had to put this in because red would turn to white
+      fill(0,0,255);
+    }
 
     // Paint the cell.
     rect( x, y, big, big );
@@ -109,12 +155,14 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 function draw_update()  // Update our display.
 {
     //console.log( "g_frame_cnt = " + g_frame_cnt );
+    //console.log("Update");
     move_bot( );
     draw_bot( );
 }
 
 function draw()  // P5 Frame Re-draw Fcn, Called for Every Frame.
 {
+    console.log("Draw");
     ++g_frame_cnt;
     if (0 == g_frame_cnt % g_frame_mod)
     {
